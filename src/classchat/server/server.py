@@ -1,3 +1,4 @@
+import json
 import socket
 import threading
 
@@ -12,86 +13,189 @@ connected_clients = {}
 # Lock to protect connected clients when multiple threads update it
 clients_lock = threading.Lock()
 
+def send_json(client_socket, payload):
+    try:
+        client_socket.sendall(json.dumps(payload).encode())
+        return True
+    except OSError:
+        return False
+
+def receive_json(client_socket):
+    try:
+        data = client_socket.recv(BUFFER_SIZE)
+        if not data:
+            return None
+
+        return json.loads(data.decode())
+    except (OSError, json.JSONDecodeError):
+        return None
+
 def handle_client(client_socket, client_address):
     print(f"Connected by {client_address}")
     username = None
 
     # Send acknowledge message to client saying "connected"
-    # sendall(...): sends the parameter to the client
-    # encode(): turns string in bytes
-    ack_message = "Connected to ClassChat server"
-    client_socket.sendall(ack_message.encode())
+    send_json(
+        client_socket,
+        {
+            "type": "ack",
+            "text": "Connected to ClassChat server",
+        },
+    )
 
     try:
         # First message from the client should be their username
-        username_data = client_socket.recv(BUFFER_SIZE)
-        if not username_data:
+        register_message = receive_json(client_socket)
+        if register_message is None:
             return
 
-        username_message = username_data.decode().strip()
-        username_parts = username_message.split(maxsplit = 1)
-
-        if len(username_parts) != 2 or username_parts[0] != "/username":
-            client_socket.sendall("Invalid username format. Use /username your_name".encode())
+        if register_message.get("type") != "register":
+            send_json(
+                client_socket,
+                {
+                    "type": "error",
+                    "text": "First message must be a register message.",
+                },
+            )
             return
 
-        username = username_parts[1]
+        username = register_message.get("sender", "").strip()
+
+        if username == "":
+            send_json(
+                client_socket,
+                {
+                    "type": "error",
+                    "text": "Username cannot be empty.",
+                },
+            )
+            return
 
         with clients_lock:
             if username in connected_clients:
-                client_socket.sendall("Username already in use.".encode())
+                send_json(
+                    client_socket,
+                    {
+                        "type": "error",
+                        "text": "Username already in use.",
+                    },
+                )
                 return
 
             connected_clients[username] = client_socket
 
-        client_socket.sendall(f"Username set to {username}".encode())
+        send_json(
+            client_socket,
+            {
+                "type": "ack",
+                "text": f"Username set to {username}",
+            },
+        )
         print(f"{username} registered from {client_address}")
 
         # Loop for persistent listening
         while True:
             # Receive any messages from the client
-            # recv(...): receives the bytes from client and decodes message into string
-            data = client_socket.recv(BUFFER_SIZE)
-            if not data:
+            message = receive_json(client_socket)
+            if message is None:
                 print(f"Client disconnected: {username}")
                 break
 
-            message = data.decode().strip()
+            message_type = message.get("type")
 
-            if message == "/quit":
-                client_socket.sendall("Closing connection.".encode())
+            if message_type == "disconnect":
+                send_json(
+                    client_socket,
+                    {
+                        "type": "disconnect",
+                        "text": "Closing connection.",
+                    },
+                )
                 print(f"Client requested disconnect: {username}")
                 break
 
-            if message == "/list":
+            if message_type == "list":
                 with clients_lock:
-                    users = ", ".join(connected_clients.keys())
-                client_socket.sendall(f"Connected users: {users}".encode())
+                    users = list(connected_clients.keys())
+                send_json(
+                    client_socket,
+                    {
+                        "type": "list",
+                        "users": users,
+                        "text": f"Connected users: {', '.join(users)}",
+                    },
+                )
                 continue
 
-            if message.startswith("/msg "):
-                message_parts = message.split(maxsplit = 2)
+            if message_type == "chat":
+                receiver = message.get("receiver", "").strip()
+                text = message.get("text", "").strip()
 
-                if len(message_parts) < 3:
-                    client_socket.sendall("Use /msg username your_message".encode())
+                if receiver == "" or text == "":
+                    send_json(
+                        client_socket,
+                        {
+                            "type": "error",
+                            "text": "Chat messages need a receiver and text.",
+                        },
+                    )
                     continue
-
-                receiver = message_parts[1]
-                text = message_parts[2]
 
                 with clients_lock:
                     receiver_socket = connected_clients.get(receiver)
 
                 if receiver_socket is None:
-                    client_socket.sendall(f"User {receiver} is not connected.".encode())
+                    send_json(
+                        client_socket,
+                        {
+                            "type": "error",
+                            "text": f"User {receiver} is not connected.",
+                        },
+                    )
                     continue
 
-                receiver_socket.sendall(f"\nFrom {username}: {text}".encode())
-                # client_socket.sendall(f"Message sent to {receiver}".encode())
+                message_sent = send_json(
+                    receiver_socket,
+                    {
+                        "type": "chat",
+                        "sender": username,
+                        "receiver": receiver,
+                        "text": text,
+                    },
+                )
+
+                if not message_sent:
+                    with clients_lock:
+                        if receiver in connected_clients:
+                            del connected_clients[receiver]
+
+                    send_json(
+                        client_socket,
+                        {
+                            "type": "error",
+                            "text": f"User {receiver} disconnected before the message could be delivered.",
+                        },
+                    )
+                    continue
+
                 print(f"{username} -> {receiver}: {text}")
                 continue
 
-            client_socket.sendall("Unknown command. Use /msg, /list, or /quit".encode())
+            send_json(
+                client_socket,
+                {
+                    "type": "error",
+                    "text": "Unknown message type.",
+                },
+            )
+    except json.JSONDecodeError:
+        send_json(
+            client_socket,
+            {
+                "type": "error",
+                "text": "Invalid JSON message format.",
+            },
+        )
     finally:
         if username is not None:
             with clients_lock:

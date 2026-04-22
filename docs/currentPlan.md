@@ -1,23 +1,22 @@
-# Plan
+# Current Plan
 
-## Finish Section 1 cleanly
-- make the current server and client persistent
-- keep the connection open until the user exits with /quit
-- Stabilize the single-client version
-- confirm repeated send/receive works
-- handle clean disconnects
-- avoid crashing on empty input or closed sockets
+## Immediate Tasks
 
-## Move into Section 2
-- let the client send and receive without the whole program feeling single-step
-- likely use threading for input and receiving, or select if you want to stay closer to the instruction hint
-## Move into Section 3
-- make the server handle multiple clients at the same time
-- usually this means a loop around accept() plus one thread per client
-## Move into Section 4
-- add usernames
-- track connected clients
-- forward messages from one client to another
-- handle “recipient not found” cleanly
-- Leave GUI until after console networking works
-- GUI is optional early
+- keep the documentation aligned with the actual code
+- capture screenshots for Sections 1 through 4
+- write up implementation details in the technical report
+- verify edge cases with two or more clients
+
+## Verification Checklist
+
+- connect multiple clients to the server
+- register unique usernames
+- send direct messages between clients
+- handle missing users correctly
+- handle abrupt disconnects correctly
+- verify `/list` and `/quit`
+
+## After Core Requirements
+
+- decide whether to implement one or more bonus features
+- best candidate bonus feature: group chat

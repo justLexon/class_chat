@@ -4,39 +4,48 @@
 
 ```text
 classChat/
-├─ docs/
-├─ project_instructions/
-├─ scripts/
-├─ src/
-│  └─ classchat/
-│     ├─ client/
-│     ├─ libs/
-│     ├─ security/
-│     └─ server/
-├─ technical_report_and_screenshots/
-│  ├─ section_one/
-│  └─ section_two/
-├─ tests/
-├─ .gitignore
-└─ README.md
+|-- docs/
+|-- project_instructions/
+|-- scripts/
+|-- src/
+|   `-- classchat/
+|       |-- client/
+|       |-- libs/
+|       |-- security/
+|       `-- server/
+|-- technical_report_and_screenshots/
+|   |-- section_one/
+|   `-- section_two/
+|-- tests/
+|-- .gitignore
+`-- README.md
 ```
 
 ## Folder Responsibilities
 
-- `docs/`: project documentation such as architecture notes and the message protocol.
-- `project_instructions/`: the original assignment PDF and its Markdown text version.
-- `scripts/`: helper scripts for running demos or starting the client and server.
-- `src/`: the main application source code.
-- `src/classchat/client/`: client-side code for connecting to the server, sending messages, and receiving messages.
-- `src/classchat/server/`: server-side code for accepting connections, managing clients, and forwarding messages.
-- `src/classchat/libs/`: shared utilities, common models, constants, or protocol helpers used across the project.
-- `src/classchat/security/`: optional security-related code such as encryption or key handling for bonus features.
-- `technical_report_and_screenshots/`: report materials and screenshots organized by project section.
-- `tests/`: test cases for protocol handling, networking behavior, and core logic.
+- `docs/`: architecture notes, protocol documentation, and planning/progress notes.
+- `project_instructions/`: original project instructions in PDF and Markdown form.
+- `scripts/`: helper scripts for running demos or future automation.
+- `src/`: main application source code.
+- `src/classchat/client/`: client networking, user input, and incoming message display.
+- `src/classchat/server/`: server networking, client registration, and message forwarding.
+- `src/classchat/libs/`: shared helpers if common logic is factored out later.
+- `src/classchat/security/`: reserved for optional encryption or security features.
+- `technical_report_and_screenshots/`: screenshots and report artifacts organized by section.
+- `tests/`: future test cases for client, server, and protocol behavior.
 
 ## High-Level Design
 
-- Clients connect to the server over TCP.
-- Messages are exchanged using a shared JSON-based format.
-- The server keeps track of connected clients and routes messages to the correct receiver.
-- Shared logic should stay in `src/classchat/libs/` so both client and server use the same message structure and helper code.
+- Clients connect to a central TCP server.
+- After connecting, each client registers a username.
+- The server stores connected usernames in a shared dictionary protected by a lock.
+- Each client connection is handled in its own thread.
+- Clients send JSON messages to the server.
+- The server validates and forwards direct messages to the intended recipient.
+
+## Current Implementation Notes
+
+- The client terminal still uses slash commands for ease of use.
+- The client translates those commands into JSON before sending them.
+- The server currently supports direct messaging and connected-user listing.
+- GUI work has not been started because the console implementation is being completed first.
