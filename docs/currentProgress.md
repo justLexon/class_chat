@@ -17,3 +17,19 @@
 - Wait for acknowledgement from server
 - Send message to the server
 - Receive message from server
+
+# 1.4 (Persistent Server and Client)
+- update server.py
+- after accept(), keep reading messages in a loop
+- reply to each message
+- break on /quit or disconnect
+- update client.py
+- after receiving the server acknowledgment, keep asking for input in a loop
+- send each message
+- print each response
+- break on /quit
+- test the flow
+- start server
+- start client
+- send 3 to 4 messages
+- quit cleanly
