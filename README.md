@@ -26,14 +26,19 @@ No third-party packages are required for the current implementation.
 ```text
 classChat/
 |-- docs/
-|-- project_instructions/
 |-- src/
 |   `-- classchat/
 |       |-- client/
 |       |-- gui/
 |       `-- server/
 |-- technical_report_and_screenshots/
-|-- tests/
+|   |-- section_1/
+|   |-- section_2/
+|   |-- section_3/
+|   |-- section_4/
+|   |-- section_5/
+|   `-- technical_report.md
+|-- .gitignore
 `-- README.md
 ```
 
@@ -123,5 +128,5 @@ Open additional GUI client windows the same way.
 
 - Architecture: [docs/architecture.md](docs/architecture.md)
 - Protocol: [docs/protocol.md](docs/protocol.md)
-- Current progress: [docs/currentProgress.md](docs/currentProgress.md)
-- Current plan: [docs/currentPlan.md](docs/currentPlan.md)
+- Project instructions PDF: [docs/Networking Semester Project Instruction.pdf](docs/Networking%20Semester%20Project%20Instruction.pdf)
+- Technical report: [technical_report_and_screenshots/technical_report.md](technical_report_and_screenshots/technical_report.md)

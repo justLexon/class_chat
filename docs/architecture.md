@@ -5,34 +5,30 @@
 ```text
 classChat/
 |-- docs/
-|-- project_instructions/
-|-- scripts/
 |-- src/
 |   `-- classchat/
 |       |-- client/
-|       |-- libs/
-|       |-- security/
+|       |-- gui/
 |       `-- server/
 |-- technical_report_and_screenshots/
-|   |-- section_one/
-|   `-- section_two/
-|-- tests/
+|   |-- section_1/
+|   |-- section_2/
+|   |-- section_3/
+|   |-- section_4/
+|   |-- section_5/
+|   `-- technical_report.md
 |-- .gitignore
 `-- README.md
 ```
 
 ## Folder Responsibilities
 
-- `docs/`: architecture notes, protocol documentation, and planning/progress notes.
-- `project_instructions/`: original project instructions in PDF and Markdown form.
-- `scripts/`: helper scripts for running demos or future automation.
+- `docs/`: architecture notes, protocol documentation, and the project instructions PDF.
 - `src/`: main application source code.
 - `src/classchat/client/`: client networking, user input, and incoming message display.
+- `src/classchat/gui/`: Tkinter GUI client and launcher GUI.
 - `src/classchat/server/`: server networking, client registration, and message forwarding.
-- `src/classchat/libs/`: shared helpers if common logic is factored out later.
-- `src/classchat/security/`: reserved for optional encryption or security features.
-- `technical_report_and_screenshots/`: screenshots and report artifacts organized by section.
-- `tests/`: future test cases for client, server, and protocol behavior.
+- `technical_report_and_screenshots/`: screenshots for project sections and the technical report.
 
 ## High-Level Design
 
@@ -48,4 +44,4 @@ classChat/
 - The client terminal still uses slash commands for ease of use.
 - The client translates those commands into JSON before sending them.
 - The server currently supports direct messaging and connected-user listing.
-- GUI work has not been started because the console implementation is being completed first.
+- The project now includes both a GUI client and a launcher GUI in addition to the console client.
